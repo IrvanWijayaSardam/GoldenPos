@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/home_screen.dart';
+
 import '../providers/auth.dart';
 import '../models/http_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +24,7 @@ class AuthScreen extends StatelessWidget {
     // Check if the user is already authenticated
     authData.tryAutoLogin().then((isAuthenticated) {
       if (isAuthenticated) {
-        Navigator.of(context).pushReplacementNamed("HomeScreen.routeName");
+        Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
       }
     });
 
