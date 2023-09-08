@@ -1,4 +1,6 @@
 
+import 'package:GoldenPos/providers/customers.dart';
+import 'package:GoldenPos/screens/customer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,6 +34,12 @@ class MyApp extends StatelessWidget {
               previousOrders == null ? [] : previousOrders.items),
               create: (ctx) => Orders('', [])
         ),
+        ChangeNotifierProxyProvider<Auth, Customers>(
+          update: (ctx, auth, previousOrders) => Customers(
+              auth.jwtToken,
+              previousOrders == null ? [] : previousOrders.items),
+              create: (ctx) => Customers('', [])
+        ),
       ],
       child: Consumer<Auth>(
         builder: (ctx, auth, _) => MaterialApp(
@@ -45,6 +53,7 @@ class MyApp extends StatelessWidget {
             HomeScreen.routeName: (ctx) => HomeScreen(),
             AuthScreen.routeName: (ctx) => AuthScreen(),
             OrderScreen.routeName: (ctx) => OrderScreen(),
+            CustomerScreen.routeName: (ctx) => CustomerScreen()
           },
         ),
       ),

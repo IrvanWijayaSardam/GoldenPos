@@ -1,3 +1,4 @@
+import 'package:GoldenPos/screens/customer_screen.dart';
 import 'package:GoldenPos/screens/orders_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,11 +40,11 @@ class AppDrawer extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.history),
-            title: Text('Laporan'),
+            leading: Icon(Icons.person),
+            title: Text('Customers'),
             onTap: () {
               Navigator.of(context)
-                  .pushReplacementNamed("ReportScreen.routeName");
+                  .pushReplacementNamed(CustomerScreen.routeName);
             },
           ),
           Divider(),
