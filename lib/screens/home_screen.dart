@@ -1,3 +1,4 @@
+import 'package:GoldenPos/providers/customers.dart';
 import 'package:GoldenPos/providers/products.dart';
 import 'package:GoldenPos/widget/product_grid.dart';
 import 'package:provider/provider.dart';

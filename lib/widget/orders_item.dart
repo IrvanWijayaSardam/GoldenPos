@@ -23,7 +23,7 @@ class OrderItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('$createdAt'), // Display Created at
-            Text('$customerName - $total' ), // Display Customer name
+            Text('$customerName - ${Utils.formatCurrency(total)}' ), // Display Customer name
           ],
         ),
         trailing: Container(

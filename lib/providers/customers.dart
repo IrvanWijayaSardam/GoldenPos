@@ -9,13 +9,22 @@ import 'package:intl/intl.dart';
 
 class Customers with ChangeNotifier {
   List<Customer> _items = [];
-
+  String _selectedCustomer = ""; 
   final String jwtToken;
 
   Customers(this.jwtToken, this._items);
 
   List<Customer> get items {
     return [..._items];
+  }
+
+  String get selectedCustomer {
+    return _selectedCustomer;
+  }
+
+   void setSelectedCustomer(String customerName) {
+    _selectedCustomer = customerName;
+    notifyListeners();
   }
 
   Customer findById(int id) {
