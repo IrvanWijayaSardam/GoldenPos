@@ -21,4 +21,8 @@ Features :
 - CRUD Customer
 
 
+Requirement :
+- Flutter 3.1.0
+
+
 Screenshot : https://github.com/IrvanWijayaSardam/GoldenPos/tree/main/screenshoot
