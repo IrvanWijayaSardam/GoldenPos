@@ -1,12 +1,10 @@
-import 'package:GoldenPos/providers/customers.dart';
-import 'package:GoldenPos/providers/products.dart';
-import 'package:GoldenPos/widget/product_grid.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../providers/auth.dart';
+import '../providers/products.dart';
 import '../widget/app_drawer.dart';
-import '../utils/utils.dart';
+import '../widget/products_item.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home-screen';
@@ -18,11 +16,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var _isLoading = false;
   var _isInit = true;
-
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -34,12 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
       Provider.of<Products>(context, listen: false)
           .fetchAndSetProducts()
           .then((_) {
-        
-      });
-
-      setState(() {
+        setState(() {
           _isLoading = false;
         });
+      });
     }
     _isInit = false;
     super.didChangeDependencies();
@@ -63,6 +60,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _onScroll() async {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await Provider.of<Products>(context, listen: false)
+            .fetchAndSetProducts();
+      } catch (error) {
+        _showErrorDialog('Failed to fetch more products: $error');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,20 +87,57 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('GoldenPos'),
       ),
       drawer: Consumer<Auth>(
-          builder: (ctx, auth, _) => AppDrawer(
-                drawerTitle: auth.name ?? '',
-              )),
+        builder: (ctx, auth, _) => AppDrawer(
+          drawerTitle: auth.name ?? '',
+        ),
+      ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : Column(
-              children: [
-                Expanded(
-                  child: ProductsGrid(),
-                ),
-              ],
+          : RefreshIndicator(
+              onRefresh: () => Provider.of<Products>(context, listen: false)
+                  .fetchAndSetProducts(),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ProductsGrid(_scrollController), // Pass the _scrollController
+                  ),
+                ],
+              ),
             ),
+    );
+  }
+}
+
+class ProductsGrid extends StatelessWidget {
+  final ScrollController scrollController;
+
+  ProductsGrid(this.scrollController);
+
+  @override
+  Widget build(BuildContext context) {
+    final trxData = Provider.of<Products>(context);
+    final products = trxData.items;
+
+    return Visibility(
+      visible: products != null && products.isNotEmpty,
+      child: GridView.builder(
+        controller: scrollController,
+        padding: const EdgeInsets.all(10.0),
+        itemCount: products.length,
+        itemBuilder: (ctx, i) => ChangeNotifierProvider.value(
+          value: products[i],
+          child: ProductItem(),
+        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 1,
+          childAspectRatio: 4 / 1,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+      ),
+      replacement: Center(child: Text('No Products available.')),
     );
   }
 }

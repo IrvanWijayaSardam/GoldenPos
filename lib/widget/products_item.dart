@@ -161,22 +161,20 @@ class ProductItem extends StatelessWidget {
               ),
               SizedBox(height: 8.0),
               Container(
-                width: 185, // Set the desired width
+                // Remove width property to make it match the parent
                 child: Text(
                   product.name,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18.0,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                   textAlign: TextAlign.right,
                 ),
               ),
+              Spacer(), // Add Spacer to push the price to the bottom
               Container(
-                width: 185, // Set the desired width
-                child: Text(
-                  product.price.toString(),
+                width: double.infinity, // Set the desired width
+                child: Text(Utils.formatCurrency(product.price),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18.0,
