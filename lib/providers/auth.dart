@@ -5,10 +5,6 @@ import 'package:http/http.dart' as http;
 import '../models/http_exception.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import './profile.dart';
-import 'package:http_parser/http_parser.dart';
-import 'dart:io';
-
 class Auth with ChangeNotifier {
   late String _jwtToken;
   late int _id;
@@ -141,20 +137,20 @@ class Auth with ChangeNotifier {
       );
       final responseData = json.decode(response.body);
       print(json.decode(response.body));
-      
-        _id = responseData["user"]["id"];
-        _name = responseData["user"]["name"];
-        _email = responseData["user"]["email"];
-        _jwtToken = responseData["access_token"];
 
-        _isAuthenticated = true;
+      _id = responseData["user"]["id"];
+      _name = responseData["user"]["name"];
+      _email = responseData["user"]["email"];
+      _jwtToken = responseData["access_token"];
 
-        // Save the user session using shared preferences
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setString('jwtToken', _jwtToken);
-        prefs.setInt('id', _id);
-        prefs.setString('name', _name);
-        prefs.setString('email', _email);
+      _isAuthenticated = true;
+
+      // Save the user session using shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('jwtToken', _jwtToken);
+      prefs.setInt('id', _id);
+      prefs.setString('name', _name);
+      prefs.setString('email', _email);
 
       notifyListeners();
     } catch (error) {
@@ -163,17 +159,8 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
-    // Perform logout logic
-    _isAuthenticated = false;
-    notifyListeners();
-
-    // Clear shared preferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-  }
-
-  Future<void> _createAccount(String name, String email, String password) async {
+  Future<void> _createAccount(
+      String name, String email, String password) async {
     final url = Uri.parse('https://test.goldenmom.id/api/register');
     try {
       final response = await http.post(
@@ -222,114 +209,42 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> _updateAccount(Profile newProfile) async {
-    final url = Uri.parse('https://cashflow-production-f95f.up.railway.app/api/user/profile');
+  Future<void> _logout() async {
+    final url = Uri.parse('https://test.goldenmom.id/api/register');
     try {
-      final response = await http.put(
+      final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': jwtToken
+          'Authorization': 'Bearer ${jwtToken}'
         },
-        body: json.encode(
-          {
-            'name': newProfile.name,
-            'email': newProfile.email,
-            'password': newProfile.password,
-            'profile': newProfile.profile,
-            'telp': newProfile.telp,
-            'pin': newProfile.pin,
-            'jk': newProfile.jk,
-          },
-        ),
       );
 
       final responseData = json.decode(response.body);
-      print(responseData);
 
       if (response.statusCode == 200) {
-        _id = responseData["data"]["id"];
-        _name = responseData["data"]["name"];
-        _email = responseData["data"]["email"];
-        _profile = responseData["data"]["profile"];
-        _telp = responseData["data"]["telp"];
-        _pin = responseData["data"]["pin"];
-        _jk = responseData["data"]["jk"];
+        _isAuthenticated = false;
 
+        // Clear shared preferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
         // Save the user session using shared preferences
-        final prefs = await SharedPreferences.getInstance();
-        prefs.setString('jwtToken', _jwtToken);
-        prefs.setInt('id', _id);
-        prefs.setString('name', _name);
-        prefs.setString('email', _email);
-        prefs.setString('profile', _profile);
-        prefs.setString('telp', _telp);
-        prefs.setString('pin', _pin);
-        prefs.setString('jk', _jk);
+        prefs.setString('jwtToken', '');
+        prefs.setInt('id', 0);
+        prefs.setString('name', '');
+        prefs.setString('email', '');
 
         print(json.decode(response.body));
         notifyListeners();
       } else {
         // Check if the error response contains 'errors' field
         if (responseData['errors'] != null) {
-          print(responseData['errors']);
           throw HttpException(responseData['errors'].toString());
         } else {
-          print(responseData['errors']);
           throw HttpException('An error occurred. Please try again later.');
         }
       }
     } catch (error) {
-      print(error);
-      throw error;
-    }
-  }
-
-  Future<void> _uploadProfilePicture(File file) async {
-    final url = Uri.parse('https://cashflow-production-f95f.up.railway.app/api/user/picture');
-    try {
-      final request = http.MultipartRequest('POST', url);
-
-      request.headers['Content-Type'] = 'application/json';
-      request.headers['Authorization'] = jwtToken;
-
-      // Attach the file to the request
-      request.files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path,
-        contentType:
-            MediaType('image', 'jpeg'), // Adjust the content type as needed
-      ));
-
-      final response = await request.send();
-      final responseData = await response.stream.bytesToString();
-
-      print(responseData);
-
-      if (response.statusCode == 200) {
-        // Handle the successful response
-        final data = json.decode(responseData);
-        final prefs = await SharedPreferences.getInstance();
-        _profile = data['data'].toString();
-
-        prefs.setString('profile', _profile);
-
-        print(data);
-        notifyListeners();
-      } else {
-        // Handle the error response
-        final errorData = json.decode(responseData);
-
-        if (errorData['errors'] != null) {
-          print(errorData['errors']);
-          throw HttpException(errorData['errors'].toString());
-        } else {
-          print(errorData['errors']);
-          throw HttpException('An error occurred. Please try again later.');
-        }
-      }
-    } catch (error) {
-      print(error);
       throw error;
     }
   }
@@ -342,11 +257,7 @@ class Auth with ChangeNotifier {
     return _createAccount(name, email, password);
   }
 
-  Future<void> update(Profile newProfile) async {
-    return _updateAccount(newProfile);
-  }
-
-  Future<void> updateProfilePicture(File file) async {
-    return _uploadProfilePicture(file);
+  Future<void> logoutUser() async {
+    return _logout();
   }
 }

@@ -49,15 +49,6 @@ class AppDrawer extends StatelessWidget {
           ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Manage Profile'),
-            onTap: () {
-              Navigator.of(context)
-                  .pushReplacementNamed("ProfileScreen.routeName");
-            },
-          ),
-          Divider(),
-          ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),
             onTap: () {
