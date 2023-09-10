@@ -4,14 +4,35 @@ import 'package:provider/provider.dart';
 import '../providers/customers.dart';
 
 class CustomerCreationForm extends StatefulWidget {
+  final int customerId;
+  final String initialName;
+  final String initialGender;
+  final String initialPhone;
+  final bool isUpdate;
+
+  CustomerCreationForm(
+      {required this.customerId,
+      required this.initialName,
+      required this.initialGender,
+      required this.initialPhone,
+      required this.isUpdate});
+
   @override
   _CustomerCreationFormState createState() => _CustomerCreationFormState();
 }
 
 class _CustomerCreationFormState extends State<CustomerCreationForm> {
-  String selectedGender = 'Male'; // Default gender value
+  late String selectedGender;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    selectedGender = widget.initialGender ?? 'male'; // Set the initial gender
+    nameController.text = widget.initialName ?? ''; // Set the initial name
+    phoneController.text = widget.initialPhone ?? ''; // Set the initial phone
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +67,7 @@ class _CustomerCreationFormState extends State<CustomerCreationForm> {
                     });
                   },
                 ),
-                Text('Male'),
+                Text('male'),
                 Radio(
                   value: 'female',
                   groupValue: selectedGender,
@@ -71,10 +92,24 @@ class _CustomerCreationFormState extends State<CustomerCreationForm> {
                 final customersProvider = context.read<Customers>();
                 final name = nameController.text;
                 final phone = phoneController.text;
-                customersProvider.createCustomer(name.toString(), selectedGender.toString(), phone.toString());
-                Navigator.of(context).pop(); // Close the bottom sheet
+                if (widget.isUpdate) {
+                  customersProvider.updateCustomer(
+                    widget.customerId.toString(),
+                    name.toString(),
+                    selectedGender.toString(),
+                    phone.toString(),
+                  );
+                  Navigator.of(context).pop(); // Close the bottom sheet
+                } else {
+                  customersProvider.createCustomer(
+                    name.toString(),
+                    selectedGender.toString(),
+                    phone.toString(),
+                  );
+                  Navigator.of(context).pop(); // Close the bottom sheet
+                }
               },
-              child: Text('Create'),
+              child: Text(widget.isUpdate ? 'Update' : 'Create'),
             ),
           ],
         ),

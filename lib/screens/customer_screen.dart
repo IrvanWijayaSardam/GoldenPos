@@ -46,7 +46,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        return CustomerCreationForm(); // Show the CustomerCreationForm
+        return CustomerCreationForm(
+          customerId: 0,
+          initialGender: '',
+          initialName: '',
+          initialPhone: '',
+          isUpdate: false,
+        ); // Show the CustomerCreationForm
       },
     );
   }

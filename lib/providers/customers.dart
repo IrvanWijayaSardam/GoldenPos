@@ -130,6 +130,54 @@ class Customers with ChangeNotifier {
       throw error;
     }
   }
+
+  Future<void> _updateCustomer(
+      String id, String name, String gender, String phone) async {
+    print('id: $id'+'name : $name ' + 'gender : ${gender} ' + 'phone : ${phone} ');
+    final url = Uri.parse('https://test.goldenmom.id/api/customers/${id}');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${jwtToken}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'name': name,
+          'gender': gender,
+          'phone': phone,
+        },
+      );
+
+      final responseData = json.decode(response.body);
+      print(responseData);
+      if (response.statusCode == 200) {
+        final customerID =
+            responseData['id']; // Extract the 'id' from the response data
+        print(json.decode(response.body));
+        notifyListeners();
+        // Show a toast message with the order ID
+        Fluttertoast.showToast(
+          msg: "Customer Updated #$customerID", // Use the extracted order ID
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        // Check if the error response contains 'errors' field
+        if (responseData['errors'] != null) {
+          throw HttpException(responseData['errors'].toString());
+        } else {
+          throw HttpException('An error occurred. Please try again later.');
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 /*
   Future<void> _createTransaksi(String transactionType, String date,
       int trxValue, String description, String trxGroup) async {
@@ -253,5 +301,10 @@ class Customers with ChangeNotifier {
 
   Future<void> createCustomer(String name, String gender, String phone) async {
     return _createCustomers(name, gender, phone);
+  }
+
+  Future<void> updateCustomer(
+      String id, String name, String gender, String phone) async {
+    return _updateCustomer(id, name, gender, phone);
   }
 }
