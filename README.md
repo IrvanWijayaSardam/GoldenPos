@@ -10,7 +10,7 @@ Made By : Irvan Wijaya
 - fluttertoast
 - pagination
 
-Overview : an App to helps users stay up-to-date on the latest moviews
+Overview : an App to helps users make an order
 
 
 Features :
