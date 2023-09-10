@@ -1,3 +1,4 @@
 # goldenpos
 
-A new Flutter project.
+Name : Irvan Wijaya
+Requirement : Flutter 3.1.0
