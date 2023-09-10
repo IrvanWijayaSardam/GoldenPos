@@ -226,6 +226,36 @@ class Orders with ChangeNotifier {
     }
   }
 
+    Future<void> _deleteOrder(String id) async {
+    print('id: $id ');
+    final url = Uri.parse('https://test.goldenmom.id/api/orders/${id}');
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${jwtToken}',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        notifyListeners();
+        // Show a toast message with the order ID
+        Fluttertoast.showToast(
+          msg: "Order Deleted #$id", // Use the extracted order ID
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   Future<void> createOrder(
       String customerId, String productId, String qty, String price) async {
     return _createOrders(customerId, productId, qty, price);
@@ -238,5 +268,8 @@ class Orders with ChangeNotifier {
 
   Future<void> payOrder(String orderId) async {
     return _payOrders(orderId);
+  }
+  Future<void> deleteOrder(String orderId) async {
+    return _deleteOrder(orderId);
   }
 }

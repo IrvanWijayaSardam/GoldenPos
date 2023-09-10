@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/orders.dart';
-import '../providers/products.dart';
-import '../utils/utils.dart';
-import '../providers/product.dart';
-import '../providers/order.dart';
 import '../providers/customers.dart';
+import '../utils/utils.dart';
 
 class OrderItem extends StatelessWidget {
   final int orderId;
@@ -23,202 +21,198 @@ class OrderItem extends StatelessWidget {
       this.price, this.customerId, this.qty, this.productId);
 
   void _showOrderDetails(BuildContext context) {
-    int quantity = 1; // Default quantity
-    String selectedCustomerID = ''; // Default selected customer ID
-    String selectedProductID = ''; // Default selected product ID
+    int quantity = qty; // Initialize quantity with the current quantity
+    String selectedCustomerID =
+        customerId.toString(); // Initialize with the current customer ID
+    String selectedProductID =
+        productId.toString(); // Initialize with the current product ID
 
     final orderProvider = Provider.of<Orders>(context, listen: false);
-    final customersProvider = Provider.of<Customers>(context, listen: false);
-    final productsProvider = Provider.of<Products>(context, listen: false);
 
-    Future.wait([
-      customersProvider.fetchAndSetCustomer(),
-      productsProvider.fetchAndSetProducts(),
-    ]).then((_) {
-      showModalBottomSheet(
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return SingleChildScrollView(
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              int totalPrice = total; // Calculate the total price
+
+              void _updateTotal(int newQuantity) {
+                setState(() {
+                  quantity = newQuantity;
+                  totalPrice = price * quantity; // Recalculate the total price
+                });
+              }
+
+              return Container(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order #$orderId',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    Text(
+                      'Created At: $createdAt',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'Customer: $customerName',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16.0),
+                    Text('Price: ${Utils.formatCurrency(price)}'),
+                    SizedBox(height: 16.0),
+                    SizedBox(height: 16.0),
+                    Text('Quantity: $quantity'), // Display the current quantity
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Quantity:'),
+                        SizedBox(width: 8.0),
+                        Expanded(
+                          child: TextField(
+                            controller: quantityController,
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              int newQuantity = int.tryParse(value) ?? 0;
+                              _updateTotal(newQuantity);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total: ${Utils.formatCurrency(totalPrice)}'),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Calculate the time difference between the current time and createdAt time
+                            final DateTime orderCreatedAt =
+                                DateTime.parse(createdAt);
+                            final DateTime currentTime = DateTime.now();
+                            final Duration difference =
+                                currentTime.difference(orderCreatedAt);
+
+                            // Check if the difference is less than or equal to 24 hours (86400 seconds)
+                            if (difference.inSeconds <= 86400) {
+                              // Order can be updated within 24 hours
+                              orderProvider
+                                  .updateOrder(
+                                orderId.toString(),
+                                selectedCustomerID,
+                                selectedProductID,
+                                quantity.toString(),
+                                totalPrice.toString(),
+                              )
+                                  .then((value) {
+                                Navigator.of(context).pop();
+                              });
+                            } else {
+                              // Order is older than 24 hours, show a message to the user
+                              Fluttertoast.showToast(
+                                msg:
+                                    "Orders can only be updated within 24 hours of creation.", // Use the extracted order ID
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0,
+                              );
+                            }
+                          },
+                          child: Text('Submit'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmAndDeleteOrder(BuildContext context) async {
+    final scaffoldMsg = ScaffoldMessenger.of(context);
+    final ordersProvider = Provider.of<Orders>(context, listen: false);
+
+    // Calculate the time difference between the current time and createdAt time
+    final DateTime orderCreatedAt = DateTime.parse(createdAt);
+    final DateTime currentTime = DateTime.now();
+    final Duration difference = currentTime.difference(orderCreatedAt);
+
+    // Check if the difference is less than or equal to 24 hours (86400 seconds)
+    if (difference.inSeconds <= 86400) {
+      // Order can be deleted
+      // Show a confirmation dialog before deleting the order
+      bool confirmDelete = await showDialog(
         context: context,
-        builder: (ctx) {
-          return SingleChildScrollView(
-            // Wrap with SingleChildScrollView
-            child: StatefulBuilder(
-              builder: (context, setState) {
-                int totalPrice = total; // Calculate the total price
-
-                void _updateTotal(int newQuantity) {
-                  setState(() {
-                    quantity = newQuantity;
-                    totalPrice =
-                        price * quantity; // Recalculate the total price
-                  });
-                }
-
-                return Container(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Order #$orderId',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                      Text(
-                        'Created At: $createdAt',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 16.0),
-                      Text(
-                        'Customer: $customerName',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 16.0),
-                      Text('Price: ${Utils.formatCurrency(price)}'),
-                      SizedBox(height: 16.0),
-                      SizedBox(height: 16.0),
-                      Text('Quantity: ${qty}'),
-                      SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Quantity:'),
-                          SizedBox(width: 8.0),
-                          Expanded(
-                            child: TextField(
-                              controller: quantityController,
-                              keyboardType: TextInputType.number,
-                              onChanged: (value) {
-                                int newQuantity = int.tryParse(value) ?? 0;
-                                _updateTotal(newQuantity);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Pilih Pelanggan:'),
-                          SizedBox(width: 8.0),
-                          Expanded(
-                            child: DropdownButton<String>(
-                              value: selectedCustomerID.isEmpty
-                                  ? customersProvider.items.isNotEmpty
-                                      ? customersProvider.items.first.id
-                                          .toString()
-                                      : null
-                                  : selectedCustomerID,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  selectedCustomerID = newValue!;
-                                });
-                              },
-                              items: customersProvider.items.map((customer) {
-                                return DropdownMenuItem<String>(
-                                  value: customer.id.toString(),
-                                  child: Text(customer.name),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Select Product:'),
-                          SizedBox(width: 8.0),
-                          Expanded(
-                            child: DropdownButton<String>(
-                              value: selectedProductID.isEmpty
-                                  ? productsProvider.items.isNotEmpty
-                                      ? productsProvider.items.first.id
-                                          .toString()
-                                      : null
-                                  : selectedProductID,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  selectedProductID = newValue!;
-                                });
-                              },
-                              items: productsProvider.items.map((product) {
-                                return DropdownMenuItem<String>(
-                                  value: product.id.toString(),
-                                  child: Text(product.name),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16.0),
-                      Text('Total: ${Utils.formatCurrency(totalPrice)}'),
-                      ElevatedButton(
-                        onPressed: () {
-                          String finalCustomerID = selectedCustomerID.isEmpty
-                              ? customerId.toString()
-                              : selectedCustomerID;
-
-                          String finalProductID = selectedProductID.isEmpty
-                              ? productId.toString()
-                              : selectedProductID;
-
-                          orderProvider
-                              .updateOrder(
-                            orderId.toString(),
-                            finalCustomerID,
-                            finalProductID,
-                            quantityController.text.toString(),
-                            totalPrice.toString(),
-                          )
-                              .then((value) {
-                            Navigator.of(context).pop();
-                          });
-                        },
-                        child: Text('Submit'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          String finalCustomerID = selectedCustomerID.isEmpty
-                              ? customerId.toString()
-                              : selectedCustomerID;
-
-                          String finalProductID = selectedProductID.isEmpty
-                              ? productId.toString()
-                              : selectedProductID;
-
-                          orderProvider
-                              .payOrder(
-                            orderId.toString(),
-                          )
-                              .then((value) {
-                            Navigator.of(context).pop();
-                          });
-                        },
-                        child: Text('Pay'),
-                      ),
-                    ],
-                  ),
-                );
+        builder: (ctx) => AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this Order?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(false); // Cancel the deletion
               },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(true); // Confirm the deletion
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmDelete == true) {
+        // User confirmed the deletion, so proceed to delete the order
+        try {
+          await ordersProvider.deleteOrder(orderId.toString());
+          scaffoldMsg.showSnackBar(
+            SnackBar(
+              content: Text('Order deleted successfully.'),
             ),
           );
-        },
+        } catch (error) {
+          scaffoldMsg.showSnackBar(
+            SnackBar(
+              content: Text('Error deleting order: $error'),
+            ),
+          );
+        }
+      }
+    } else {
+      // Order is older than 24 hours, show a message to the user
+      scaffoldMsg.showSnackBar(
+        SnackBar(
+          content:
+              Text('Orders can only be deleted within 24 hours of creation.'),
+        ),
       );
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final scaffoldMsg = ScaffoldMessenger.of(context);
-    final customersProvider = Provider.of<Customers>(context, listen: false);
-
     return Card(
       child: ListTile(
         title: Text('Order #$orderId'),
@@ -244,8 +238,8 @@ class OrderItem extends StatelessWidget {
               ),
               IconButton(
                 icon: Icon(Icons.delete),
-                onPressed: () async {
-                  // Handle delete action
+                onPressed: () {
+                  _confirmAndDeleteOrder(context);
                 },
                 color: Theme.of(context).errorColor,
               ),

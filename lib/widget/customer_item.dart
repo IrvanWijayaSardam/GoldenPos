@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/customers.dart';
 import '../providers/orders.dart';
 import '../utils/utils.dart';
 import '../screens/customer_form.dart'; // Import your CustomerCreationForm widget
@@ -57,8 +58,51 @@ class CustomerItem extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () async {
-                  // Handle delete action
-                  // ...
+                  final customersProvider =
+                      Provider.of<Customers>(context, listen: false);
+
+                  // Show a confirmation dialog before deleting the customer
+                  bool confirmDelete = await showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text('Confirm Delete'),
+                      content: Text(
+                          'Are you sure you want to delete this customer?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(ctx).pop(false); // Cancel the deletion
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(ctx).pop(true); // Confirm the deletion
+                          },
+                          child: Text('Delete'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmDelete == true) {
+                    // User confirmed the deletion, so proceed to delete the customer
+                    try {
+                      await customersProvider.deleteCustomer(id.toString());
+                      scaffoldMsg.showSnackBar(
+                        SnackBar(
+                          content: Text('Customer deleted successfully.'),
+                        ),
+                      );
+                    } catch (error) {
+                      scaffoldMsg.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Error deleting customer.' + error.toString()),
+                        ),
+                      );
+                    }
+                  }
                 },
                 color: Theme.of(context).errorColor,
               ),
