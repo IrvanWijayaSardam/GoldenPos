@@ -21,4 +21,4 @@ Features :
 - CRUD Customer
 
 
-Screenshot :
+Screenshot : https://github.com/IrvanWijayaSardam/GoldenPos/tree/main/screenshoot
