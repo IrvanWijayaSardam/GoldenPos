@@ -133,8 +133,64 @@ class Orders with ChangeNotifier {
     }
   }
 
+  Future<void> _updateOrders(String orderid, String customerId,
+      String productId, String qty, String price) async {
+    print(
+        'customer id ${customerId} product id ${productId} qty ${qty} price ${price}');
+    final url = Uri.parse('https://test.goldenmom.id/api/orders/$orderid');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${jwtToken}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'customer_id': customerId,
+          'product_id': productId,
+          'qty': qty,
+          'price': price,
+        },
+      );
+
+      final responseData = json.decode(response.body);
+      print(responseData);
+      if (response.statusCode == 201) {
+        final orderId =
+            responseData['id']; // Extract the 'id' from the response data
+        print(json.decode(response.body));
+        notifyListeners();
+        // Show a toast message with the order ID
+        Fluttertoast.showToast(
+          msg:
+              "Success Update The Order, Order ID #$orderId", // Use the extracted order ID
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        // Check if the error response contains 'errors' field
+        if (responseData['errors'] != null) {
+          throw HttpException(responseData['errors'].toString());
+        } else {
+          throw HttpException('An error occurred. Please try again later.');
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+
   Future<void> createOrder(
       String customerId, String productId, String qty, String price) async {
     return _createOrders(customerId, productId, qty, price);
+  }
+
+  Future<void> updateOrder(String orderId, String customerId, String productId,
+      String qty, String price) async {
+    return _updateOrders(orderId,customerId, productId, qty, price);
   }
 }

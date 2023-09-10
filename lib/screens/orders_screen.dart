@@ -48,14 +48,6 @@ class _OrderScreenState extends State<OrderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Orders'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.of(context).pushNamed("EditTransactionScreen.routeName");
-            },
-          ),
-        ],
       ),
       drawer: Consumer<Auth>(
         builder: (ctx, auth, _) => AppDrawer(
@@ -84,6 +76,10 @@ class _OrderScreenState extends State<OrderScreen> {
                               trxData.items[i].createdAt,
                               trxData.items[i].customer.name,
                               trxData.items[i].total,
+                              trxData.items[i].product.price,
+                              trxData.items[i].customer.id,
+                              trxData.items[i].qty,
+                              trxData.items[i].product.id
                             ),
                             Divider(),
                           ],
