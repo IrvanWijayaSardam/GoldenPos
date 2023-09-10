@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/customers.dart';
 import '../providers/orders.dart';
 import '../utils/utils.dart';
-import '../screens/customer_form.dart'; // Import your CustomerCreationForm widget
+import '../screens/customer_form.dart'; 
 
 class CustomerItem extends StatelessWidget {
   final int id;
@@ -17,7 +17,6 @@ class CustomerItem extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
-        // Pass the customer data as arguments to the CustomerForm
         return CustomerCreationForm(
           customerId: id,
           initialName: name,
@@ -35,13 +34,13 @@ class CustomerItem extends StatelessWidget {
 
     return Card(
       child: ListTile(
-        title: Text('$id'), // Display Customer ID
+        title: Text('$id'), 
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('$name'), // Display Customer Name
-            Text('$gender'), // Display Gender
-            Text('$phone'), // Display Phone
+            Text('$name'), 
+            Text('$gender'),
+            Text('$phone'), 
           ],
         ),
         trailing: Container(
@@ -61,7 +60,7 @@ class CustomerItem extends StatelessWidget {
                   final customersProvider =
                       Provider.of<Customers>(context, listen: false);
 
-                  // Show a confirmation dialog before deleting the customer
+                
                   bool confirmDelete = await showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
@@ -71,13 +70,13 @@ class CustomerItem extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            Navigator.of(ctx).pop(false); // Cancel the deletion
+                            Navigator.of(ctx).pop(false); 
                           },
                           child: Text('Cancel'),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.of(ctx).pop(true); // Confirm the deletion
+                            Navigator.of(ctx).pop(true);
                           },
                           child: Text('Delete'),
                         ),
@@ -86,7 +85,6 @@ class CustomerItem extends StatelessWidget {
                   );
 
                   if (confirmDelete == true) {
-                    // User confirmed the deletion, so proceed to delete the customer
                     try {
                       await customersProvider.deleteCustomer(id.toString());
                       scaffoldMsg.showSnackBar(

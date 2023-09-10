@@ -6,7 +6,7 @@ import '../widget/customer_item.dart';
 import '../widget/app_drawer.dart';
 import '../providers/auth.dart';
 
-import 'customer_form.dart'; // Import your CustomerCreationForm widget
+import 'customer_form.dart'; 
 
 class CustomerScreen extends StatefulWidget {
   static const routeName = '/customer-screen';
@@ -52,7 +52,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
           initialName: '',
           initialPhone: '',
           isUpdate: false,
-        ); // Show the CustomerCreationForm
+        ); 
       },
     );
   }
@@ -66,7 +66,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              _showCustomerCreationForm(context); // Show the bottom sheet
+              _showCustomerCreationForm(context); 
             },
           ),
         ],
@@ -92,7 +92,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     padding: EdgeInsets.all(8),
                     child: ListView.builder(
                       controller:
-                          _scrollController, // Attach the scroll controller
+                          _scrollController, 
                       itemCount: trxData.items.length,
                       itemBuilder: (_, i) {
                         return Column(

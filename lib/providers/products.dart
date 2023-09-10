@@ -7,7 +7,7 @@ import './product.dart';
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
-  String? _nextPageUrl; // Use String? for nullable URL
+  String? _nextPageUrl;
   final String jwtToken;
   bool _isLoading = false;
 
@@ -60,7 +60,7 @@ class Products with ChangeNotifier {
         if (responseData['next_page_url'] != null) {
           _nextPageUrl = responseData['next_page_url'];
         } else {
-          _nextPageUrl = null; // No more pages
+          _nextPageUrl = null; 
         }
 
         _items.addAll(loadedProducts);

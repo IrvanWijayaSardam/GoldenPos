@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 children: [
                   Expanded(
-                    child: ProductsGrid(_scrollController), // Pass the _scrollController
+                    child: ProductsGrid(_scrollController),
                   ),
                 ],
               ),

@@ -29,9 +29,9 @@ class _CustomerCreationFormState extends State<CustomerCreationForm> {
   @override
   void initState() {
     super.initState();
-    selectedGender = widget.initialGender ?? 'male'; // Set the initial gender
-    nameController.text = widget.initialName ?? ''; // Set the initial name
-    phoneController.text = widget.initialPhone ?? ''; // Set the initial phone
+    selectedGender = widget.initialGender ?? 'male';
+    nameController.text = widget.initialName ?? '';
+    phoneController.text = widget.initialPhone ?? '';
   }
 
   @override
@@ -43,7 +43,7 @@ class _CustomerCreationFormState extends State<CustomerCreationForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Add Customer',
+              widget.isUpdate ? 'Update Customer' : 'Add Customer',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
@@ -99,14 +99,14 @@ class _CustomerCreationFormState extends State<CustomerCreationForm> {
                     selectedGender.toString(),
                     phone.toString(),
                   );
-                  Navigator.of(context).pop(); // Close the bottom sheet
+                  Navigator.of(context).pop();
                 } else {
                   customersProvider.createCustomer(
                     name.toString(),
                     selectedGender.toString(),
                     phone.toString(),
                   );
-                  Navigator.of(context).pop(); // Close the bottom sheet
+                  Navigator.of(context).pop();
                 }
               },
               child: Text(widget.isUpdate ? 'Update' : 'Create'),

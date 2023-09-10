@@ -145,7 +145,6 @@ class Auth with ChangeNotifier {
 
       _isAuthenticated = true;
 
-      // Save the user session using shared preferences
       final prefs = await SharedPreferences.getInstance();
       prefs.setString('jwtToken', _jwtToken);
       prefs.setInt('id', _id);
@@ -197,7 +196,6 @@ class Auth with ChangeNotifier {
         print(json.decode(response.body));
         notifyListeners();
       } else {
-        // Check if the error response contains 'errors' field
         if (responseData['errors'] != null) {
           throw HttpException(responseData['errors'].toString());
         } else {
@@ -225,10 +223,8 @@ class Auth with ChangeNotifier {
       if (response.statusCode == 200) {
         _isAuthenticated = false;
 
-        // Clear shared preferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.clear();
-        // Save the user session using shared preferences
         prefs.setString('jwtToken', '');
         prefs.setInt('id', 0);
         prefs.setString('name', '');
@@ -237,7 +233,6 @@ class Auth with ChangeNotifier {
         print(json.decode(response.body));
         notifyListeners();
       } else {
-        // Check if the error response contains 'errors' field
         if (responseData['errors'] != null) {
           throw HttpException(responseData['errors'].toString());
         } else {

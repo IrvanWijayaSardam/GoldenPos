@@ -1,6 +1,8 @@
 # GoldenPos
 Point Of Sale Application - Hybrid app written in Flutter - 
 
+Made By : Irvan Wijaya
+
 - Provider
 - Intl
 - Http 

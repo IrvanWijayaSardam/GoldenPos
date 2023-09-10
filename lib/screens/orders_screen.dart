@@ -66,7 +66,7 @@ class _OrderScreenState extends State<OrderScreen> {
                   builder: (ctx, trxData, _) => Padding(
                     padding: EdgeInsets.all(8),
                     child: ListView.builder(
-                      controller: _scrollController, // Attach the scroll controller
+                      controller: _scrollController, 
                       itemCount: trxData.items.length,
                       itemBuilder: (_, i) {
                         return Column(

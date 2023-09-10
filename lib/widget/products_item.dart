@@ -13,13 +13,11 @@ class ProductItem extends StatelessWidget {
     final customersProvider = Provider.of<Customers>(context, listen: false);
     final orderProvider = Provider.of<Orders>(context, listen: false);
 
-    // Function to show the product details in a BottomSheet
     void _showProductDetails() {
-      int quantity = 1; // Default quantity
-      String selectedCustomer = ''; // Default selected customer
+      int quantity = 1; 
+      String selectedCustomer = ''; 
       String selectedCustomerID = '';
 
-      // Fetch customer data here before showing the modal
       customersProvider.fetchAndSetCustomer().then((_) {
         showModalBottomSheet(
           context: context,
@@ -27,13 +25,13 @@ class ProductItem extends StatelessWidget {
             return StatefulBuilder(
               builder: (context, setState) {
                 int totalPrice =
-                    product.price * quantity; // Calculate the total price
+                    product.price * quantity; 
 
                 void _updateTotal(int newQuantity) {
                   setState(() {
                     quantity = newQuantity;
                     totalPrice =
-                        product.price * quantity; // Recalculate the total price
+                        product.price * quantity; 
                   });
                 }
 
@@ -91,13 +89,13 @@ class ProductItem extends StatelessWidget {
                               onChanged: (newValue) {
                                 setState(() {
                                   selectedCustomerID =
-                                      newValue!; // Set the selectedCustomerID
+                                      newValue!; 
                                 });
                               },
                               items: customersProvider.items.map((customer) {
                                 return DropdownMenuItem<String>(
                                   value: customer.id
-                                      .toString(), // Use the customer ID as the value
+                                      .toString(), 
                                   child: Text(customer.name),
                                 );
                               }).toList(),
@@ -107,20 +105,20 @@ class ProductItem extends StatelessWidget {
                       ),
                       SizedBox(height: 16.0),
                       Text(
-                          'Total: ${Utils.formatCurrency(totalPrice)}'), // Display the total here
+                          'Total: ${Utils.formatCurrency(totalPrice)}'), 
 
                       ElevatedButton(
                         onPressed: () {
                           orderProvider
                               .createOrder(
                                 selectedCustomerID
-                                    .toString(), // This might be an int
+                                    .toString(), 
                                 product.id
-                                    .toString(), // product.id is cast to String
+                                    .toString(),
                                 quantity
-                                    .toString(), // quantity is cast to String
+                                    .toString(), 
                                 totalPrice
-                                    .toString(), // totalPrice is cast to String
+                                    .toString(), 
                               )
                               .then((value) => {
                                     Navigator.of(context).pop(),
@@ -161,7 +159,6 @@ class ProductItem extends StatelessWidget {
               ),
               SizedBox(height: 8.0),
               Container(
-                // Remove width property to make it match the parent
                 child: Text(
                   product.name,
                   style: TextStyle(
@@ -171,9 +168,9 @@ class ProductItem extends StatelessWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-              Spacer(), // Add Spacer to push the price to the bottom
+              Spacer(), 
               Container(
-                width: double.infinity, // Set the desired width
+                width: double.infinity, 
                 child: Text(Utils.formatCurrency(product.price),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

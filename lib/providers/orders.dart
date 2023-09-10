@@ -69,11 +69,10 @@ class Orders with ChangeNotifier {
         print('Next Page Url : ${_nextPageUrl}');
       } else {
         print('Max Page');
-        _nextPageUrl = ""; // Page sudah terload semua
-        _hasMorePages = false; // set flag agar tidak load ulang
+        _nextPageUrl = ""; 
+        _hasMorePages = false; 
       }
 
-      // masukan order ke list yang sudah ada
       _items.addAll(loadedOrders);
       notifyListeners();
     } catch (error) {
@@ -106,13 +105,12 @@ class Orders with ChangeNotifier {
       print(responseData);
       if (response.statusCode == 201) {
         final orderId =
-            responseData['id']; // Extract the 'id' from the response data
+            responseData['id'];
         print(json.decode(response.body));
         notifyListeners();
-        // Show a toast message with the order ID
         Fluttertoast.showToast(
           msg:
-              "Transaction Success, Order ID #$orderId", // Use the extracted order ID
+              "Transaction Success, Order ID #$orderId", 
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -157,13 +155,12 @@ class Orders with ChangeNotifier {
       print(responseData);
       if (response.statusCode == 200) {
         final orderId =
-            responseData['id']; // Extract the 'id' from the response data
+            responseData['id'];
         print(json.decode(response.body));
         notifyListeners();
-        // Show a toast message with the order ID
         Fluttertoast.showToast(
           msg:
-              "Success Update The Order, Order ID #$orderId", // Use the extracted order ID
+              "Success Update The Order, Order ID #$orderId",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -172,7 +169,6 @@ class Orders with ChangeNotifier {
           fontSize: 16.0,
         );
       } else {
-        // Check if the error response contains 'errors' field
         if (responseData['errors'] != null) {
           throw HttpException(responseData['errors'].toString());
         } else {
@@ -199,13 +195,12 @@ class Orders with ChangeNotifier {
       print(responseData);
       if (response.statusCode == 200) {
         final orderId =
-            responseData['id']; // Extract the 'id' from the response data
+            responseData['id']; 
         print(json.decode(response.body));
         notifyListeners();
-        // Show a toast message with the order ID
         Fluttertoast.showToast(
           msg:
-              "Order Paid, Order ID #$orderId", // Use the extracted order ID
+              "Order Paid, Order ID #$orderId",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -214,7 +209,6 @@ class Orders with ChangeNotifier {
           fontSize: 16.0,
         );
       } else {
-        // Check if the error response contains 'errors' field
         if (responseData['errors'] != null) {
           throw HttpException(responseData['errors'].toString());
         } else {
@@ -240,9 +234,8 @@ class Orders with ChangeNotifier {
 
       if (response.statusCode == 204) {
         notifyListeners();
-        // Show a toast message with the order ID
         Fluttertoast.showToast(
-          msg: "Order Deleted #$id", // Use the extracted order ID
+          msg: "Order Deleted #$id",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,

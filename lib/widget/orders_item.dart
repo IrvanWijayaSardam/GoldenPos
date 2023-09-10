@@ -21,11 +21,9 @@ class OrderItem extends StatelessWidget {
       this.price, this.customerId, this.qty, this.productId);
 
   void _showOrderDetails(BuildContext context) {
-    int quantity = qty; // Initialize quantity with the current quantity
-    String selectedCustomerID =
-        customerId.toString(); // Initialize with the current customer ID
-    String selectedProductID =
-        productId.toString(); // Initialize with the current product ID
+    int quantity = qty;
+    String selectedCustomerID = customerId.toString();
+    String selectedProductID = productId.toString();
 
     final orderProvider = Provider.of<Orders>(context, listen: false);
 
@@ -35,12 +33,12 @@ class OrderItem extends StatelessWidget {
         return SingleChildScrollView(
           child: StatefulBuilder(
             builder: (context, setState) {
-              int totalPrice = total; // Calculate the total price
+              int totalPrice = total;
 
               void _updateTotal(int newQuantity) {
                 setState(() {
                   quantity = newQuantity;
-                  totalPrice = price * quantity; // Recalculate the total price
+                  totalPrice = price * quantity;
                 });
               }
 
@@ -73,7 +71,7 @@ class OrderItem extends StatelessWidget {
                     Text('Price: ${Utils.formatCurrency(price)}'),
                     SizedBox(height: 16.0),
                     SizedBox(height: 16.0),
-                    Text('Quantity: $quantity'), // Display the current quantity
+                    Text('Quantity: $quantity'),
                     SizedBox(height: 16.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -99,16 +97,13 @@ class OrderItem extends StatelessWidget {
                         Text('Total: ${Utils.formatCurrency(totalPrice)}'),
                         ElevatedButton(
                           onPressed: () {
-                            // Calculate the time difference between the current time and createdAt time
                             final DateTime orderCreatedAt =
                                 DateTime.parse(createdAt);
                             final DateTime currentTime = DateTime.now();
                             final Duration difference =
                                 currentTime.difference(orderCreatedAt);
 
-                            // Check if the difference is less than or equal to 24 hours (86400 seconds)
                             if (difference.inSeconds <= 86400) {
-                              // Order can be updated within 24 hours
                               orderProvider
                                   .updateOrder(
                                 orderId.toString(),
@@ -121,7 +116,6 @@ class OrderItem extends StatelessWidget {
                                 Navigator.of(context).pop();
                               });
                             } else {
-                              // Order is older than 24 hours, show a message to the user
                               Fluttertoast.showToast(
                                 msg:
                                     "Orders can only be updated within 24 hours of creation.", // Use the extracted order ID
@@ -135,6 +129,26 @@ class OrderItem extends StatelessWidget {
                             }
                           },
                           child: Text('Submit'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            String finalCustomerID = selectedCustomerID.isEmpty
+                                ? customerId.toString()
+                                : selectedCustomerID;
+
+                            String finalProductID = selectedProductID.isEmpty
+                                ? productId.toString()
+                                : selectedProductID;
+
+                            orderProvider
+                                .payOrder(
+                              orderId.toString(),
+                            )
+                                .then((value) {
+                              Navigator.of(context).pop();
+                            });
+                          },
+                          child: Text('Pay'),
                         ),
                       ],
                     ),
@@ -152,15 +166,11 @@ class OrderItem extends StatelessWidget {
     final scaffoldMsg = ScaffoldMessenger.of(context);
     final ordersProvider = Provider.of<Orders>(context, listen: false);
 
-    // Calculate the time difference between the current time and createdAt time
     final DateTime orderCreatedAt = DateTime.parse(createdAt);
     final DateTime currentTime = DateTime.now();
     final Duration difference = currentTime.difference(orderCreatedAt);
 
-    // Check if the difference is less than or equal to 24 hours (86400 seconds)
     if (difference.inSeconds <= 86400) {
-      // Order can be deleted
-      // Show a confirmation dialog before deleting the order
       bool confirmDelete = await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -169,13 +179,13 @@ class OrderItem extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(ctx).pop(false); // Cancel the deletion
+                Navigator.of(ctx).pop(false);
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(ctx).pop(true); // Confirm the deletion
+                Navigator.of(ctx).pop(true);
               },
               child: Text('Delete'),
             ),
@@ -184,7 +194,6 @@ class OrderItem extends StatelessWidget {
       );
 
       if (confirmDelete == true) {
-        // User confirmed the deletion, so proceed to delete the order
         try {
           await ordersProvider.deleteOrder(orderId.toString());
           scaffoldMsg.showSnackBar(
@@ -201,7 +210,6 @@ class OrderItem extends StatelessWidget {
         }
       }
     } else {
-      // Order is older than 24 hours, show a message to the user
       scaffoldMsg.showSnackBar(
         SnackBar(
           content:
