@@ -183,6 +183,26 @@ class OrderItem extends StatelessWidget {
                         },
                         child: Text('Submit'),
                       ),
+                      ElevatedButton(
+                        onPressed: () {
+                          String finalCustomerID = selectedCustomerID.isEmpty
+                              ? customerId.toString()
+                              : selectedCustomerID;
+
+                          String finalProductID = selectedProductID.isEmpty
+                              ? productId.toString()
+                              : selectedProductID;
+
+                          orderProvider
+                              .payOrder(
+                            orderId.toString(),
+                          )
+                              .then((value) {
+                            Navigator.of(context).pop();
+                          });
+                        },
+                        child: Text('Pay'),
+                      ),
                     ],
                   ),
                 );
