@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'package:GoldenPos/providers/Order.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
-
-
+import 'package:fluttertoast/fluttertoast.dart';
+import '../models/http_exception.dart';
 
 class Customers with ChangeNotifier {
   List<Customer> _items = [];
-  String _selectedCustomer = ""; 
+  String _selectedCustomer = "";
   final String jwtToken;
+  String _nextPageUrl = '';
+  bool _hasMorePages = true;
 
   Customers(this.jwtToken, this._items);
 
@@ -22,7 +23,7 @@ class Customers with ChangeNotifier {
     return _selectedCustomer;
   }
 
-   void setSelectedCustomer(String customerName) {
+  void setSelectedCustomer(String customerName) {
     _selectedCustomer = customerName;
     notifyListeners();
   }
@@ -32,35 +33,103 @@ class Customers with ChangeNotifier {
   }
 
   Future<void> fetchAndSetCustomer() async {
-  var url = Uri.parse('https://test.goldenmom.id/api/customers');
-  try {
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $jwtToken',
-      },
-    );
-    final responseData = json.decode(response.body);
-    final List<Customer> loadedProduct = [];
-    final List<dynamic> custData = responseData['data'];
-    custData.forEach((cstData) {
-      loadedProduct.add(Customer(
-        id : cstData['id'] as int, // Cast to int if 'id' is an integer
-        uuid: cstData['uuid'] as String, // Cast to String if 'uuid' is a string
-        name: cstData['name'] as String, // Cast to String if 'code' is a string
-        gender: cstData['gender'] as String, // Cast to String if 'name' is a string
-        phone: cstData['phone'] as String, // Cast to int if 'price' is an integer
-      ));
-    });
-    _items = loadedProduct;
-    notifyListeners();
-  } catch (error) {
-    print('Error fetching products: $error');
-    throw error;
+    try {
+      if (!_hasMorePages) {
+        // Tidak ada page lagi
+        return;
+      }
+
+      String url = _nextPageUrl.isNotEmpty
+          ? _nextPageUrl
+          : 'https://test.goldenmom.id/api/customers';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $jwtToken',
+        },
+      );
+      final responseData = json.decode(response.body);
+      final List<Customer> loadedCustomer = [];
+
+      final List<dynamic> custData = responseData['data'];
+      custData.forEach((cstData) {
+        loadedCustomer.add(Customer(
+          id: cstData['id'] as int, // Cast to int if 'id' is an integer
+          uuid:
+              cstData['uuid'] as String, // Cast to String if 'uuid' is a string
+          name:
+              cstData['name'] as String, // Cast to String if 'code' is a string
+          gender: cstData['gender']
+              as String, // Cast to String if 'name' is a string
+          phone: cstData['phone']
+              as String, // Cast to int if 'price' is an integer
+        ));
+      });
+      if (responseData['next_page_url'] != null) {
+        _nextPageUrl = responseData['next_page_url'];
+        print('Next Page Url : ${_nextPageUrl}');
+      } else {
+        print('Max Page');
+        _nextPageUrl = ""; // Page sudah terload semua
+        _hasMorePages = false; // set flag agar tidak load ulang
+      }
+
+      // masukan order ke list yang sudah ada
+      _items.addAll(loadedCustomer);
+      notifyListeners();
+    } catch (error) {
+      print('Error fetching orders: $error');
+      throw error;
+    }
   }
-}
 
+  Future<void> _createCustomers(
+      String name, String gender, String phone) async {
+    print('name : $name ' + 'gender : ${gender}' + 'phone : ${phone}');
+    final url = Uri.parse('https://test.goldenmom.id/api/customers');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${jwtToken}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'name': name,
+          'gender': gender,
+          'phone': phone,
+        },
+      );
 
+      final responseData = json.decode(response.body);
+      print(responseData);
+      if (response.statusCode == 201) {
+        final customerID =
+            responseData['id']; // Extract the 'id' from the response data
+        print(json.decode(response.body));
+        notifyListeners();
+        // Show a toast message with the order ID
+        Fluttertoast.showToast(
+          msg: "Customer Created #$customerID", // Use the extracted order ID
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        // Check if the error response contains 'errors' field
+        if (responseData['errors'] != null) {
+          throw HttpException(responseData['errors'].toString());
+        } else {
+          throw HttpException('An error occurred. Please try again later.');
+        }
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 /*
   Future<void> _createTransaksi(String transactionType, String date,
       int trxValue, String description, String trxGroup) async {
@@ -181,4 +250,8 @@ class Customers with ChangeNotifier {
     return _deleteTransactions(id);
   }
   */
+
+  Future<void> createCustomer(String name, String gender, String phone) async {
+    return _createCustomers(name, gender, phone);
+  }
 }

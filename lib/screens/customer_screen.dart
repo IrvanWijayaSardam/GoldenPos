@@ -1,32 +1,58 @@
-
-import 'package:GoldenPos/widget/customer_item.dart';
-
-import '../providers/orders.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
 
-import '../providers/auth.dart';
-import '../widget/orders_item.dart';
 import '../providers/customers.dart';
-
-
+import '../widget/customer_item.dart';
 import '../widget/app_drawer.dart';
+import '../providers/auth.dart';
 
-class CustomerScreen extends StatelessWidget {
+import 'customer_form.dart'; // Import your CustomerCreationForm widget
+
+class CustomerScreen extends StatefulWidget {
   static const routeName = '/customer-screen';
 
-  Future<void> _refreshTransactions(BuildContext context) async {
-    await Provider.of<Customers>(context, listen: false)
-        .fetchAndSetCustomer();
+  @override
+  _CustomerScreenState createState() => _CustomerScreenState();
+}
+
+class _CustomerScreenState extends State<CustomerScreen> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refreshCustomers(BuildContext context) async {
+    await Provider.of<Customers>(context, listen: false).fetchAndSetCustomer();
+  }
+
+  void _onScroll() {
+    // Pagination: Check if scrolled to the bottom
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      Provider.of<Customers>(context, listen: false).fetchAndSetCustomer();
+    }
+  }
+
+  void _showCustomerCreationForm(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return CustomerCreationForm(); // Show the CustomerCreationForm
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // final trxData = Provider.of<Transactions>(context);
-    if (kDebugMode) {
-      print('rebuilding...');
-    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
@@ -34,7 +60,7 @@ class CustomerScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              Navigator.of(context).pushNamed("EditTransactionScreen.routeName");
+              _showCustomerCreationForm(context); // Show the bottom sheet
             },
           ),
         ],
@@ -45,19 +71,25 @@ class CustomerScreen extends StatelessWidget {
         ),
       ),
       body: FutureBuilder(
-        future: _refreshTransactions(context),
-        builder: (ctx, snapshot) =>
-            snapshot.connectionState == ConnectionState.waiting
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () => _refreshTransactions(context),
-                    child: Consumer<Customers> (builder: (ctx, trxData, _) => Padding(
-                      padding: EdgeInsets.all(8),
-                      child: ListView.builder(
-                        itemCount: trxData.items.length,
-                        itemBuilder: (_, i) => Column(
+        future: _refreshCustomers(context),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return RefreshIndicator(
+              onRefresh: () => _refreshCustomers(context),
+              child: Consumer<Customers>(
+                builder: (ctx, trxData, _) {
+                  return Padding(
+                    padding: EdgeInsets.all(8),
+                    child: ListView.builder(
+                      controller:
+                          _scrollController, // Attach the scroll controller
+                      itemCount: trxData.items.length,
+                      itemBuilder: (_, i) {
+                        return Column(
                           children: [
                             CustomerItem(
                               trxData.items[i].id,
@@ -67,10 +99,15 @@ class CustomerScreen extends StatelessWidget {
                             ),
                             Divider(),
                           ],
-                        ),
-                      ),
-                    ),)
-                  ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            );
+          }
+        },
       ),
     );
   }
